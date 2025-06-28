@@ -51,7 +51,7 @@ router.get('/shipping-rates/:country', async (req, res) => {
             `https://${process.env.SHOPIFY_SHOP_DOMAIN}/admin/api/2024-01/shipping_zones.json`,
             {
                 headers: {
-                    'X-Shopify-Access-Token': process.env.SHOPIFY_ADMIN_TOKEN,
+                    'X-Shopify-Access-Token': process.env.SHOPIFY_TOKEN,
                     'Content-Type': 'application/json'
                 }
             }
@@ -89,12 +89,12 @@ router.get('/shipping-rates/:country', async (req, res) => {
         const formattedRates = targetZone.price_based_shipping_rates?.map(rate => {
             try {
                 const convertedPrice = convertCurrency(
-                    parseFloat(rate.price), 
-                    BASE_CURRENCY, 
-                    targetCurrency, 
+                    parseFloat(rate.price),
+                    BASE_CURRENCY,
+                    targetCurrency,
                     rates
                 );
-                
+
                 return {
                     name: rate.name,
                     price: Math.round(convertedPrice * 100) / 100, // Round to 2 decimal places
@@ -143,7 +143,7 @@ router.get('/shipping-rates/:country', async (req, res) => {
 
     } catch (error) {
         console.error('Error fetching shipping rates:', error);
-        
+
         // Handle specific error types
         if (error.message.includes('Shopify API')) {
             return res.status(502).json({
@@ -166,13 +166,13 @@ router.get('/supported-currencies', async (req, res) => {
     try {
         const rates = await getExchangeRates();
         const cacheInfo = currencyCache.getTtl('exchangeRates');
-        
+
         res.json({
             success: true,
             base_currency: BASE_CURRENCY,
             supported_currencies: Object.keys(rates).sort(),
             total_currencies: Object.keys(rates).length,
-            last_updated: cacheInfo 
+            last_updated: cacheInfo
                 ? new Date(Date.now() - (currencyCache.options.stdTTL * 1000 - cacheInfo)).toISOString()
                 : 'Using fallback rates',
             cache_expires_in: cacheInfo ? Math.floor(cacheInfo / 1000) : null
@@ -193,7 +193,7 @@ router.get('/countries', async (req, res) => {
             `https://${process.env.SHOPIFY_SHOP_DOMAIN}/admin/api/2024-01/shipping_zones.json`,
             {
                 headers: {
-                    'X-Shopify-Access-Token': process.env.SHOPIFY_ADMIN_TOKEN,
+                    'X-Shopify-Access-Token': process.env.SHOPIFY_TOKEN,
                     'Content-Type': 'application/json'
                 }
             }
@@ -240,7 +240,7 @@ router.get('/countries', async (req, res) => {
 
     } catch (error) {
         console.error('Error fetching countries:', error);
-        
+
         if (error.message.includes('Shopify API')) {
             return res.status(502).json({
                 success: false,
@@ -263,7 +263,7 @@ router.get('/health', async (req, res) => {
         // Quick health check
         const rates = await getExchangeRates();
         const hasValidRates = rates && Object.keys(rates).length > 0;
-        
+
         res.json({
             success: true,
             status: 'healthy',
