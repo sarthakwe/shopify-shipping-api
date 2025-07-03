@@ -1,7 +1,33 @@
 const express = require('express');
 const fetch = require('node-fetch');
 const router = express.Router();
-
+const lang = req.headers['accept-language']?.split(',')[0]?.split('-')[0]?.toLowerCase() || 'en';
+const translations = {
+    en: {
+        zipNote: 'Rates based on provided location',
+        defaultNote: (country) => `Rates based on ${country} default location`
+    },
+    fr: {
+        zipNote: 'Tarifs basés sur l’emplacement fourni',
+        defaultNote: (country) => `Tarifs basés sur l’emplacement par défaut de ${country}`
+    },
+    es: {
+        zipNote: 'Tarifas basadas en la ubicación proporcionada',
+        defaultNote: (country) => `Tarifas basadas en la ubicación predeterminada de ${country}`
+    },
+    de: {
+        zipNote: 'Preise basierend auf dem angegebenen Standort',
+        defaultNote: (country) => `Preise basierend auf dem Standardstandort von ${country}`
+    },
+    it: {
+        zipNote: 'Tariffe basate sulla posizione fornita',
+        defaultNote: (country) => `Tariffe basate sulla posizione predefinita di ${country}`
+    },
+    nl: {
+        zipNote: 'Tarieven gebaseerd op opgegeven locatie',
+        defaultNote: (country) => `Tarieven gebaseerd op de standaardlocatie van ${country}`
+    }
+};
 // Country validation utilities (keeping existing ones)
 const COUNTRY_CODES = {
     "AF": "Afghanistan",
@@ -1318,8 +1344,8 @@ router.post('/shipping-rates', async (req, res) => {
                 },
                 timestamp: new Date().toISOString(),
                 note: zipCode
-                    ? 'Rates based on provided location'
-                    : `Rates based on ${COUNTRY_CODES[countryCode]} default location`,
+                    ? t.zipNote
+                    : t.defaultNote(COUNTRY_CODES[countryCode] || countryCode),
                 currencyConversion: {
                     requestedCurrency: effectiveCurrency,
                     originalCurrency: variant.currency,
